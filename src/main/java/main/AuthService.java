@@ -3,9 +3,12 @@ package main;
 import java.io.*;
 import java.util.Scanner;
 
+import static main.PasswordHasher.hash;
+import static main.PasswordHasher.verify;
+
 public class AuthService {
 
-    private static final String USERS_FILE = "users.txt";
+    private static final String USERS_FILE = "user.txt";
 
     public static int readMenuOptions(Scanner scanner) {
         int op;
@@ -15,7 +18,7 @@ public class AuthService {
                 scanner.nextLine();
             }
             op = scanner.nextInt();
-            if (op < 1 || op > 4) {
+            if (op < 1 || op > 6) {
                 System.err.println("Number must be between 1 and 4!");
             } else {
                 break;
@@ -40,7 +43,7 @@ public class AuthService {
             return;
         }
 
-        if (stored.equals(password)) {
+        if (verify(password, stored)) {
             System.out.println("Logging in");
         } else {
             System.err.println("Password is incorrect!");
@@ -83,7 +86,7 @@ public class AuthService {
         }
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(USERS_FILE, true))) {
-            writer.write(username + ":" + password);
+            writer.write(username + ":" + hash(password));
             writer.newLine();
             System.out.println("Registered successfully!");
         } catch (IOException e) {
@@ -104,10 +107,11 @@ public class AuthService {
                 if (part.length < 2) continue;
 
                 String storedUsername = part[0].trim();
+                String storedHash = part[1].trim();
                 if (storedUsername.isEmpty()) continue;
 
                 if (storedUsername.equals(inputUsername)) {
-                    return part[1]; //todo HASH
+                    return storedHash; //todo HASH
                 }
             }
         } catch (IOException e) {
