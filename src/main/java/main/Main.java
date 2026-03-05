@@ -2,6 +2,7 @@ package main;
 import java.util.Scanner;
 import static main.AuthService.*;
 import static main.PasswordHasher.hash;
+import static main.UserRepository.findHashByUsername;
 
 public class Main {
     public static void main(String[] args) {
@@ -28,7 +29,7 @@ public class Main {
                 case 3: {
                     System.out.print("Enter username: ");
                     String username = scanner.nextLine();
-                    String storedUsername = findStoredPasswordByUsername(username);
+                    String storedUsername = findHashByUsername(username);
                     if (storedUsername == null) System.err.println("User not found");
                     else System.err.println("User exists");
                 }

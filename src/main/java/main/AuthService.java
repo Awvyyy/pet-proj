@@ -3,12 +3,12 @@ package main;
 import java.io.*;
 import java.util.Scanner;
 
+import static main.FileUserRepository.saveUser;
 import static main.PasswordHasher.hash;
 import static main.PasswordHasher.verify;
+import static main.UserRepository.findHashByUsername;
 
 public class AuthService {
-
-    private static final String USERS_FILE = "user.txt";
 
     public static int readMenuOptions(Scanner scanner) {
         int op;
@@ -36,7 +36,7 @@ public class AuthService {
         String password = scanner.nextLine();
         System.out.println();
 
-        String stored = findStoredPasswordByUsername(username);
+        String stored = findHashByUsername(username);
 
         if (stored == null) {
             System.err.println("User not found!");
@@ -76,47 +76,13 @@ public class AuthService {
             System.err.println("':' is prohibited in password.");
             return;
         }
-
         System.out.println();
-
-        // guard 3: unique username
-        if (findStoredPasswordByUsername(username) != null) {
-            System.err.println("User exists");
+        if (findHashByUsername(username) != null){
+            System.err.println("User exists.");
+            System.out.println();
             return;
         }
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(USERS_FILE, true))) {
-            writer.write(username + ":" + hash(password));
-            writer.newLine();
-            System.out.println("Registered successfully!");
-        } catch (IOException e) {
-            System.err.println("Error writing file!");
-        }
-    }
-
-    public static String findStoredPasswordByUsername(String username) {
-        String inputUsername = username.trim();
-        if (inputUsername.isEmpty()) return null;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(USERS_FILE))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
-
-                String[] part = line.split(":", 2);
-                if (part.length < 2) continue;
-
-                String storedUsername = part[0].trim();
-                String storedHash = part[1].trim();
-                if (storedUsername.isEmpty()) continue;
-
-                if (storedUsername.equals(inputUsername)) {
-                    return storedHash; //todo HASH
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error reading file!");
-        }
-        return null;
+        saveUser(username, hash(password));
+        System.out.println("Registered successfully!");
     }
 }
